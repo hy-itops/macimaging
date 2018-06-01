@@ -15,7 +15,6 @@ import xml.dom.minidom
 from subprocess import Popen
 
 import logging 
-
 import argparse
 
 
