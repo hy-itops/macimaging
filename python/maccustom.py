@@ -6,8 +6,6 @@ import subprocess
 import os
 import sys
 import time
-
-
 import requests
 import base64
 import xml.dom.minidom
