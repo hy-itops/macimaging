@@ -8,6 +8,6 @@
 For example:
 sudo /Users/Shared/macimaging/python/maccustom.py /Users/Shared/macimaging https://jssurl:8443/JSSResource/policies jss_user jss_password
 
-4. After running the python file, the computer name will be renamed and the selected policy will be executed
+4. After running the python file, the computer name will be renamed and the selected policy starting with @ will be executed
 
 5. The log file is saved in the same location. For example, the location is /Users/Shared/macimaging
