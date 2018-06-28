@@ -16,6 +16,7 @@ import argparse
 
 
 def run_command(cmd):
+    """Runs a command"""
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     result_dict = {
