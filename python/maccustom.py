@@ -153,7 +153,7 @@ def main():
             print("policy id:"+policy_id)
             result=run_jamf_policy(int(policy_id))
         except FileNotFoundError:
-            #quite the installation screen
+            #quit the installation screen
             p.terminate()
             return
         
