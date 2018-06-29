@@ -1,5 +1,6 @@
 #!/anaconda3/bin/python
 # Written By Peter Yang
+# Date: 2018
 
 
 import subprocess
@@ -49,6 +50,8 @@ def run_jamf_policy(p):
     return result_dict
 
 def main():
+    
+    #parse arguments
     parser=argparse.ArgumentParser()
     parser.add_argument("base_dir",help="base directory")
     parser.add_argument("jss_url",help="jss url")
@@ -61,7 +64,9 @@ def main():
     PasswordVar=args.jss_password
     JssUrl=args.jss_url
 
+    #configure log file
     logging.basicConfig(filename=base_directory+"/imaging.log",level=logging.DEBUG)
+    
     #generate the software options list for startup.html
     generate_list_startup(base_directory,UsernameVar,PasswordVar,JssUrl)
     
@@ -108,7 +113,7 @@ def main():
             output_2 = invalid_output_1.split('\n')
             
     #show installation screen
-    #generate_install_apps("There are "+str(total_software_count)+" software to install")
+    #
     generate_install_apps("Installing software, please wait ...",base_directory)
     time.sleep(2)
     cmd = [base_directory+'/Trigger/Trigger.app/Contents/MacOS/Trigger', '-f', base_directory+'/setup_mac.html', 'wait','--fullscreen']   
@@ -148,13 +153,15 @@ def main():
             print("policy id:"+policy_id)
             result=run_jamf_policy(int(policy_id))
         except FileNotFoundError:
+            #quite the installation screen
             p.terminate()
             return
         
-        #poll=p_policy.poll()
+        #print result in the console, the result will also be written in log file
         print("return result:"+str(result))
         print("success code:"+str(result['success']))
-      
+
+    #quit the installation screen  
     p.terminate()
     
     #show complete screen
@@ -165,18 +172,22 @@ def main():
     
 
 def generate_install_apps(install_log,base_directory):
+    """generate the installation in progress screen"""
+    """install_log is the content shows on the screen"""
     #replace software option list with real values
     print(install_log)
     out_file = open(base_directory+"/setup_mac_tmp.html", "w")
     cmd_replace=['sed', "s/h_install_log/" + install_log+ "/g",base_directory+"/setup_mac_template.html" ]
-    subprocess.call(cmd_replace, stdout=out_file);
+    subprocess.call(cmd_replace, stdout=out_file)
     
     #copy the temp file to startup.html
     cmd_copy_str="cp -f "+base_directory+"/setup_mac_tmp.html "+base_directory+"/setup_mac.html"
     cmd_copy = cmd_copy_str.split()
-    subprocess.check_output(cmd_copy);
+    subprocess.check_output(cmd_copy)
     
+
 def generate_list_startup(base_directory,UsernameVar,PasswordVar,JssUrl):
+    """generate the information input screen"""
     select_list="<option><\/option>"
     policy_list=get_policy_list(UsernameVar,PasswordVar,JssUrl)
     for policy in policy_list:
@@ -184,41 +195,38 @@ def generate_list_startup(base_directory,UsernameVar,PasswordVar,JssUrl):
         policy_name=policy_name.replace("@", "")
         select_list = select_list + "<option>"+policy_name+"<\/option>"    
     
-    #cmd_replace_str="sed \'s/h_select_list/" + select_list+ "/g\' ../startup_template.html>../startup_tmp.html"
-    #cmd_replace = cmd_replace_str.split()
-    
+    #
+    #    
     #replace software option list with real values
     out_file = open(base_directory+"/startup_tmp.html", "w")
     cmd_replace=['sed', "s/h_select_list/" + select_list+ "/g",base_directory+"/startup_template.html" ]
-    subprocess.call(cmd_replace, stdout=out_file);
+    subprocess.call(cmd_replace, stdout=out_file)
     
     #copy the temp file to startup.html
     cmd_copy_str="cp -f "+base_directory+"/startup_tmp.html "+base_directory+"/startup.html"
     cmd_copy = cmd_copy_str.split()
-    subprocess.check_output(cmd_copy);
-    #output = subprocess.check_output(cmd);
-    #print(select_list)
-    #print(policy_list)
+    subprocess.check_output(cmd_copy)
+    
 
 
 def get_policy_list(UsernameVar,PasswordVar,JssUrl):
-    
+    """Retrieve the policy list from JAMF Pro"""
     policy_list=[]
     r=requests.get(JssUrl,auth=(UsernameVar, PasswordVar),verify=False)
     
-    xmldoc = xml.dom.minidom.parseString(r.text) # or xml.dom.minidom.parseString(xml_string)
-    #print(r.text)
-    
+    xmldoc = xml.dom.minidom.parseString(r.text)
+        
     policies=xmldoc.getElementsByTagName("policy")
     policy_list=[]
-    
-    
+
+
     for policy in policies:
         policy_name=policy.getElementsByTagName('name')[0].firstChild.nodeValue
-        #print(policy_name)
+        
+        #find the special policy and add to the policy_list
         if "@"  in policy_name:
            policy_id=policy.getElementsByTagName('id')[0].firstChild.nodeValue       
-           #print(policy_id)
+
            policy_list.append({'name':policy_name,'id':policy_id})
     return policy_list
 
