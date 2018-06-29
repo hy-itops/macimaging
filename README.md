@@ -1,5 +1,7 @@
 # macimaging
 
+This software is used for Apple Mac DEP imaging. Below are the steps to set it up.
+
 1. Package Anaconda3 or other python3 and deploy to the target machine.
 
 2. Package this software and deploy to the target machine. For example, the target location is /Users/Shared/macimaging
